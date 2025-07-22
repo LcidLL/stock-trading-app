@@ -10,9 +10,35 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_07_17_113032) do
+ActiveRecord::Schema[7.2].define(version: 2025_07_22_092823) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "active_admin_comments", force: :cascade do |t|
+    t.string "namespace"
+    t.text "body"
+    t.string "resource_type"
+    t.bigint "resource_id"
+    t.string "author_type"
+    t.bigint "author_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["author_type", "author_id"], name: "index_active_admin_comments_on_author"
+    t.index ["namespace"], name: "index_active_admin_comments_on_namespace"
+    t.index ["resource_type", "resource_id"], name: "index_active_admin_comments_on_resource"
+  end
+
+  create_table "admin_users", force: :cascade do |t|
+    t.string "email", default: "", null: false
+    t.string "encrypted_password", default: "", null: false
+    t.string "reset_password_token"
+    t.datetime "reset_password_sent_at"
+    t.datetime "remember_created_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_admin_users_on_email", unique: true
+    t.index ["reset_password_token"], name: "index_admin_users_on_reset_password_token", unique: true
+  end
 
   create_table "admins", force: :cascade do |t|
     t.string "email", default: "", null: false
@@ -25,4 +51,54 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_17_113032) do
     t.index ["email"], name: "index_admins_on_email", unique: true
     t.index ["reset_password_token"], name: "index_admins_on_reset_password_token", unique: true
   end
+
+  create_table "portfolios", force: :cascade do |t|
+    t.bigint "trader_id", null: false
+    t.bigint "stock_id", null: false
+    t.integer "quantity"
+    t.decimal "average_price"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["stock_id"], name: "index_portfolios_on_stock_id"
+    t.index ["trader_id"], name: "index_portfolios_on_trader_id"
+  end
+
+  create_table "stocks", force: :cascade do |t|
+    t.string "symbol"
+    t.string "name"
+    t.decimal "current_price"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "traders", force: :cascade do |t|
+    t.string "email", default: "", null: false
+    t.string "encrypted_password", default: "", null: false
+    t.string "reset_password_token"
+    t.datetime "reset_password_sent_at"
+    t.datetime "remember_created_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_traders_on_email", unique: true
+    t.index ["reset_password_token"], name: "index_traders_on_reset_password_token", unique: true
+  end
+
+  create_table "transactions", force: :cascade do |t|
+    t.bigint "trader_id", null: false
+    t.bigint "stock_id", null: false
+    t.string "transaction_type"
+    t.integer "quantity"
+    t.decimal "price"
+    t.decimal "total_amount"
+    t.string "status"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["stock_id"], name: "index_transactions_on_stock_id"
+    t.index ["trader_id"], name: "index_transactions_on_trader_id"
+  end
+
+  add_foreign_key "portfolios", "stocks"
+  add_foreign_key "portfolios", "traders"
+  add_foreign_key "transactions", "stocks"
+  add_foreign_key "transactions", "traders"
 end
