@@ -1,2 +1,49 @@
-<h1>Traders#dashboard</h1>
-<p>Find me in app/views/traders/dashboard.html.erb</p>
+<h1>Trader Dashboard</h1>
+<p>Welcome, <%= current_trader.email %>!</p>
+
+<div class="portfolio-summary">
+  <h2>Portfolio Summary</h2>
+  <p><strong>Total Portfolio Value:</strong> $<%= number_with_precision(@total_portfolio_value, precision: 2) %></p>
+</div>
+
+<div class="available-stocks">
+  <h2>Available Stocks</h2>
+  <% Stock.available_for_trading.each do |stock| %>
+    <div class="stock-item">
+      <strong><%= stock.symbol %></strong> - <%= stock.name %>
+      <br>Price: $<%= number_with_precision(stock.current_price, precision: 2) %>
+      
+      <%= form_with url: traders_buy_stock_path(current_trader), method: :post, local: true do |f| %>
+        <%= f.hidden_field :stock_id, value: stock.id %>
+        <%= f.number_field :quantity, placeholder: "Quantity", min: 1, required: true %>
+        <%= f.submit "Buy" %>
+      <% end %>
+    </div>
+    <br>
+  <% end %>
+</div>
+
+<div class="recent-transactions">
+  <h2>Recent Transactions</h2>
+  <% if @recent_transactions.any? %>
+    <% @recent_transactions.each do |transaction| %>
+      <p>
+        <%= transaction.transaction_type.capitalize %> 
+        <%= transaction.quantity %> shares of 
+        <%= transaction.stock.symbol %> at 
+        $<%= number_with_precision(transaction.price, precision: 2) %>
+        - <%= transaction.created_at.strftime("%m/%d/%Y") %>
+      </p>
+    <% end %>
+  <% else %>
+    <p>No transactions yet.</p>
+  <% end %>
+  
+  <%= link_to "View All Transactions", traders_transactions_path(current_trader) %>
+</div>
+
+<div class="navigation">
+  <%= link_to "Portfolio", traders_portfolio_path(current_trader) %>
+  <%= link_to "Transactions", traders_transactions_path(current_trader) %>
+  <%= link_to "Logout", destroy_trader_session_path, method: :delete %>
+</div>

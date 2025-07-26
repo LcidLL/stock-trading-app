@@ -15,14 +15,20 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
 
-  root "pages#index"
-  get 'login', to: 'login#new'
+  root "login#new"
   post 'login', to: 'login#create'
+
+  namespace :admin do
+    resources :users
+  end
 
   resources :traders, only: [] do
     member do
-      get :dashboard, :portfolio, :transactions
-      post :buy_stock, :sell_stock
+      get :dashboard
+      get :portfolio
+      get :transactions
+      post :buy_stock
+      post :sell_stock
     end
   end
 end

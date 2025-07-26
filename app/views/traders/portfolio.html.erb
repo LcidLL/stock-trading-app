@@ -1,2 +1,47 @@
-<h1>Traders#portfolio</h1>
-<p>Find me in app/views/traders/portfolio.html.erb</p>
+<h1>My Portfolio</h1>
+
+<div class="portfolio-summary">
+  <h2>Portfolio Summary</h2>
+  <p><strong>Total Value:</strong> $<%= number_with_precision(@total_value, precision: 2) %></p>
+  <p><strong>Total P&L:</strong> 
+    <span style="color: <%= @total_profit_loss >= 0 ? 'green' : 'red' %>">
+      $<%= number_with_precision(@total_profit_loss, precision: 2) %>
+    </span>
+  </p>
+</div>
+
+<div class="portfolio-holdings">
+  <h2>Holdings</h2>
+  <% if @portfolios.any? %>
+    <% @portfolios.each do |portfolio| %>
+      <div class="holding-item">
+        <h3><%= portfolio.stock.symbol %> - <%= portfolio.stock.name %></h3>
+        <p><strong>Quantity:</strong> <%= portfolio.quantity %></p>
+        <p><strong>Average Price:</strong> $<%= number_with_precision(portfolio.average_price, precision: 2) %></p>
+        <p><strong>Current Price:</strong> $<%= number_with_precision(portfolio.stock.current_price, precision: 2) %></p>
+        <p><strong>Current Value:</strong> $<%= number_with_precision(portfolio.current_value, precision: 2) %></p>
+        <p><strong>P&L:</strong> 
+          <span style="color: <%= portfolio.profit_loss >= 0 ? 'green' : 'red' %>">
+            $<%= number_with_precision(portfolio.profit_loss, precision: 2) %>
+            (<%= number_with_precision(portfolio.profit_loss_percentage, precision: 2) %>%)
+          </span>
+        </p>
+        
+        <%= form_with url: traders_sell_stock_path(current_trader), method: :post, local: true do |f| %>
+          <%= f.hidden_field :stock_id, value: portfolio.stock.id %>
+          <%= f.number_field :quantity, placeholder: "Quantity to sell", min: 1, max: portfolio.quantity, required: true %>
+          <%= f.submit "Sell" %>
+        <% end %>
+      </div>
+      <hr>
+    <% end %>
+  <% else %>
+    <p>You don't own any stocks yet.</p>
+  <% end %>
+</div>
+
+<div class="navigation">
+  <%= link_to "Dashboard", traders_dashboard_path(current_trader) %>
+  <%= link_to "Transactions", traders_transactions_path(current_trader) %>
+  <%= link_to "Logout", destroy_trader_session_path, method: :delete %>
+</div>

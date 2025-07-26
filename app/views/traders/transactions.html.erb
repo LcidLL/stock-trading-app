@@ -1,2 +1,32 @@
-<h1>Traders#transactions</h1>
-<p>Find me in app/views/traders/transactions.html.erb</p>
+<h1>Transaction History</h1>
+
+<div class="filter-options">
+  <%= link_to "All", traders_transactions_path(current_trader) %>
+  <%= link_to "Purchases", traders_transactions_path(current_trader, type: 'buy') %>
+  <%= link_to "Sales", traders_transactions_path(current_trader, type: 'sell') %>
+</div>
+
+<div class="transactions-list">
+  <% if @transactions.any? %>
+    <% @transactions.each do |transaction| %>
+      <div class="transaction-item">
+        <p><strong>Type:</strong> <%= transaction.transaction_type.capitalize %></p>
+        <p><strong>Stock:</strong> <%= transaction.stock.symbol %> - <%= transaction.stock.name %></p>
+        <p><strong>Quantity:</strong> <%= transaction.quantity %></p>
+        <p><strong>Price per share:</strong> $<%= number_with_precision(transaction.price, precision: 2) %></p>
+        <p><strong>Total Amount:</strong> $<%= number_with_precision(transaction.total_amount, precision: 2) %></p>
+        <p><strong>Date:</strong> <%= transaction.created_at.strftime("%m/%d/%Y at %I:%M %p") %></p>
+        <p><strong>Status:</strong> <%= transaction.status.capitalize %></p>
+      </div>
+      <hr>
+    <% end %>
+  <% else %>
+    <p>No transactions found.</p>
+  <% end %>
+</div>
+
+<div class="navigation">
+  <%= link_to "Dashboard", traders_dashboard_path(current_trader) %>
+  <%= link_to "Portfolio", traders_portfolio_path(current_trader) %>
+  <%= link_to "Logout", destroy_trader_session_path, method: :delete %>
+</div>
