@@ -1,0 +1,47 @@
+<h1>Create New Trader Account</h1>
+
+<%= form_with(model: @user, url: admin_users_path, local: true) do |form| %>
+  <% if @user.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@user.errors.count, "error") %> prohibited this trader from being saved:</h2>
+      <ul>
+        <% @user.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :email %>
+    <%= form.email_field :email, placeholder: "trader@example.com" %>
+  </div>
+
+  <div class="field">
+    <%= form.label :password %>
+    <%= form.password_field :password, placeholder: "Leave blank to auto-generate" %>
+    <small>(If left blank, a random password will be generated)</small>
+  </div>
+
+  <div class="field">
+    <%= form.label :password_confirmation %>
+    <%= form.password_field :password_confirmation, placeholder: "Repeat password" %>
+  </div>
+
+  <%# Optional fields %>
+  <div class="field">
+    <%= form.label :name %>
+    <%= form.text_field :name, placeholder: "John Doe" %>
+  </div>
+
+  <div class="field">
+    <%= form.label :phone_number %>
+    <%= form.text_field :phone_number, placeholder: "+639123456789" %>
+  </div>
+
+  <div class="actions">
+    <%= form.submit "Create Trader" %>
+  </div>
+<% end %>
+
+<%= link_to 'Back to Users List', admin_users_path %> 

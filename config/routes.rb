@@ -19,6 +19,10 @@ Rails.application.routes.draw do
   get 'login', to: 'login#new'
   post 'login', to: 'login#create'
 
+  namespace :admin do
+    resources :users
+  end
+
   resources :traders, only: [] do
     member do
       get :dashboard, :portfolio, :transactions
