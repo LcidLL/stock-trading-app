@@ -15,11 +15,20 @@ end
 
 puts "Created #{Stock.count} stocks"
 
+# Create approved trader
 trader = Trader.find_or_create_by(email: 'trader@example.com') do |t|
   t.password = 'password123'
   t.password_confirmation = 'password123'
-  t.status = 'approved'
-  t.skip_confirmation!
 end
 
-puts "Created sample trader: #{trader.email}"
+# Ensure it's approved (in case it already existed)
+trader.update!(status: 'approved')
+puts "Created/updated trader: #{trader.email} - Status: #{trader.status}"
+
+# Create admin
+admin = AdminUser.find_or_create_by(email: 'admin@example.com') do |a|
+  a.password = 'password123'
+  a.password_confirmation = 'password123'
+end
+
+puts "Created admin: #{admin.email}"

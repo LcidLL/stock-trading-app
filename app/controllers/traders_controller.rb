@@ -4,8 +4,9 @@ class TradersController < ApplicationController
   
   def dashboard
     @total_portfolio_value = current_trader.total_portfolio_value
-    @recent_transactions = current_trader.transactions.order(created_at: :desc).limit(5)
+    @recent_transactions = current_trader.transactions.recent.limit(5)
     @top_stocks = current_trader.portfolios.joins(:stock).limit(5)
+    @pending_transactions = current_trader.transactions.pending_approval.recent.limit(5) if defined?(current_trader.transactions.pending_approval)
   end
   
   def portfolio
@@ -15,9 +16,10 @@ class TradersController < ApplicationController
   end
   
   def transactions
-    @transactions = current_trader.transactions.includes(:stock).order(created_at: :desc)
+    @transactions = current_trader.transactions.includes(:stock).recent
     @transactions = @transactions.where(transaction_type: params[:type]) if params[:type].present?
-    @transactions = @transactions.page(params[:page])
+    @transactions = @transactions.where(status: params[:status]) if params[:status].present?
+    # Add pagination if using kaminari: @transactions = @transactions.page(params[:page])
   end
   
   def buy_stock
@@ -25,23 +27,25 @@ class TradersController < ApplicationController
     quantity = params[:quantity].to_i
     
     if quantity <= 0
-      redirect_back(fallback_location: traders_dashboard_path, alert: 'Invalid quantity')
+      redirect_back(fallback_location: "/traders/#{current_trader.id}/dashboard", alert: 'Invalid quantity')
       return
     end
     
+    # Create pending transaction instead of completed
     transaction = current_trader.transactions.build(
       stock: @stock,
       transaction_type: :buy,
       quantity: quantity,
       price: @stock.current_price,
-      status: :completed
+      status: :pending
     )
     
     if transaction.save
-      update_portfolio_after_buy(transaction)
-      redirect_to traders_dashboard_path(current_trader), notice: 'Stock purchased successfully!'
+      redirect_to "/traders/#{current_trader.id}/dashboard", 
+                  notice: 'Buy order submitted! Waiting for admin approval.'
     else
-      redirect_back(fallback_location: traders_dashboard_path, alert: 'Failed to purchase stock')
+      redirect_back(fallback_location: "/traders/#{current_trader.id}/dashboard", 
+                   alert: 'Failed to submit buy order')
     end
   end
   
@@ -51,24 +55,32 @@ class TradersController < ApplicationController
     portfolio = current_trader.portfolios.find_by(stock: @stock)
     
     if !portfolio || portfolio.quantity < quantity
-      redirect_back(fallback_location: traders_portfolio_path(current_trader), alert: 'Insufficient stocks to sell')
+      redirect_back(fallback_location: "/traders/#{current_trader.id}/portfolio", 
+                   alert: 'Insufficient stocks to sell')
       return
     end
     
+    # Create pending transaction
     transaction = current_trader.transactions.build(
       stock: @stock,
       transaction_type: :sell,
       quantity: quantity,
       price: @stock.current_price,
-      status: :completed
+      status: :pending
     )
     
     if transaction.save
-      update_portfolio_after_sell(transaction, portfolio)
-      redirect_to traders_portfolio_path(current_trader), notice: 'Stock sold successfully!'
+      redirect_to "/traders/#{current_trader.id}/portfolio", 
+                  notice: 'Sell order submitted! Waiting for admin approval.'
     else
-      redirect_back(fallback_location: traders_portfolio_path(current_trader), alert: 'Failed to sell stock')
+      redirect_back(fallback_location: "/traders/#{current_trader.id}/portfolio", 
+                   alert: 'Failed to submit sell order')
     end
+  end
+  
+  def logout
+    sign_out(current_trader)
+    redirect_to root_path, notice: 'Logged out successfully!'
   end
   
   private
@@ -77,34 +89,6 @@ class TradersController < ApplicationController
     unless current_trader.approved?
       sign_out(current_trader)
       redirect_to root_path, alert: 'Your account is pending approval. Please wait for admin approval.'
-    end
-  end
-  
-  def update_portfolio_after_buy(transaction)
-    portfolio = current_trader.portfolios.find_or_initialize_by(stock: transaction.stock)
-    
-    if portfolio.persisted?
-      total_cost = (portfolio.quantity * portfolio.average_price) + transaction.total_amount
-      total_quantity = portfolio.quantity + transaction.quantity
-      portfolio.update!(
-        quantity: total_quantity,
-        average_price: total_cost / total_quantity
-      )
-    else
-      portfolio.update!(
-        quantity: transaction.quantity,
-        average_price: transaction.price
-      )
-    end
-  end
-  
-  def update_portfolio_after_sell(transaction, portfolio)
-    new_quantity = portfolio.quantity - transaction.quantity
-    
-    if new_quantity > 0
-      portfolio.update!(quantity: new_quantity)
-    else
-      portfolio.destroy
     end
   end
 end

@@ -1,4 +1,3 @@
-# app/controllers/admin/users_controller.rb
 class Admin::UsersController < ApplicationController
   before_action :authenticate_user!
   before_action :authorize_admin!
@@ -6,7 +5,9 @@ class Admin::UsersController < ApplicationController
   layout 'admin'
 
   def index
-    @users = User.where(role: :trader).order(created_at: :desc)
+    @pending_traders = Trader.pending.order(created_at: :desc)
+    @approved_traders = Trader.approved.order(created_at: :desc)
+    @pending_transactions = Transaction.pending_approval.includes(:trader, :stock).order(created_at: :desc)
   end
 
   def new
@@ -17,7 +18,6 @@ class Admin::UsersController < ApplicationController
     @user = User.new(user_params)
     @user.password = generate_random_password unless user_params[:password].present?
     @user.password_confirmation = @user.password
-
     @user.role = :trader
 
     if @user.save
@@ -26,6 +26,32 @@ class Admin::UsersController < ApplicationController
       flash.now[:alert] = "Failed to create trader. Please check the form for errors."
       render :new, status: :unprocessable_entity
     end
+  end
+
+  def approve
+    trader = Trader.find(params[:id])
+    trader.update!(status: :approved)
+    # TODO: Send approval email notification
+    redirect_to admin_users_path, notice: "Trader #{trader.email} has been approved."
+  end
+
+  def reject
+    trader = Trader.find(params[:id])
+    trader.update!(status: :rejected)
+    # TODO: Send rejection email notification
+    redirect_to admin_users_path, notice: "Trader #{trader.email} has been rejected."
+  end
+
+  def approve_transaction
+    transaction = Transaction.find(params[:transaction_id])
+    transaction.approve!
+    redirect_to admin_users_path, notice: "Transaction approved and executed."
+  end
+
+  def reject_transaction
+    transaction = Transaction.find(params[:transaction_id])
+    transaction.reject!
+    redirect_to admin_users_path, notice: "Transaction rejected."
   end
 
   private

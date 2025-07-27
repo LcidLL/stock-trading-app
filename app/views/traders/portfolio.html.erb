@@ -27,7 +27,7 @@
           </span>
         </p>
         
-        <%= form_with url: traders_sell_stock_path(current_trader), method: :post, local: true do |f| %>
+        <%= form_with url: "/traders/#{current_trader.id}/sell_stock", method: :post, local: true do |f| %>
           <%= f.hidden_field :stock_id, value: portfolio.stock.id %>
           <%= f.number_field :quantity, placeholder: "Quantity to sell", min: 1, max: portfolio.quantity, required: true %>
           <%= f.submit "Sell" %>
@@ -41,7 +41,8 @@
 </div>
 
 <div class="navigation">
-  <%= link_to "Dashboard", traders_dashboard_path(current_trader) %>
-  <%= link_to "Transactions", traders_transactions_path(current_trader) %>
-  <%= link_to "Logout", destroy_trader_session_path, method: :delete %>
+  <%= link_to "Dashboard", "/traders/#{current_trader.id}/dashboard" %>
+  <%= link_to "Portfolio", "/traders/#{current_trader.id}/portfolio" %>
+  <%= link_to "Transactions", "/traders/#{current_trader.id}/transactions" %>
+  <%= link_to "Logout", "/traders/#{current_trader.id}/logout", method: :delete %>
 </div>

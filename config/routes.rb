@@ -1,25 +1,30 @@
 Rails.application.routes.draw do
   devise_for :admins
   devise_for :traders
-  get "pages/index"
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
   devise_for :admin_users, ActiveAdmin::Devise.config
   ActiveAdmin.routes(self)
 
-
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
+  get "pages/index"
   get "up" => "rails/health#show", as: :rails_health_check
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
 
-  # Defines the root path route ("/")
-
-  root "login#new"
-  post 'login', to: 'login#create'
+  # Root path with user type selection
+  root "auth#index"
+  get 'login/trader', to: 'auth#trader_login', as: 'login_trader'
+  get 'login/admin', to: 'auth#admin_login', as: 'login_admin'
+  post 'login/trader', to: 'auth#trader_authenticate'
+  post 'login/admin', to: 'auth#admin_authenticate'
+  get 'signup/trader', to: 'auth#trader_signup', as: 'signup_trader'
+  post 'signup/trader', to: 'auth#create_trader_account'
 
   namespace :admin do
-    resources :users
+    resources :users do
+      member do
+        patch :approve
+        patch :reject
+      end
+    end
   end
 
   resources :traders, only: [] do
@@ -29,6 +34,7 @@ Rails.application.routes.draw do
       get :transactions
       post :buy_stock
       post :sell_stock
+      get :logout
     end
   end
 end

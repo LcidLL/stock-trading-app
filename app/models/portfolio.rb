@@ -3,7 +3,7 @@ class Portfolio < ApplicationRecord
   belongs_to :stock
 
   validates :quantity, presence: true, numericality: { greater_than_or_equal_to: 0 }
-  validates :average_price, presence: true, numericality: { greater_than 0 }
+  validates :average_price, presence: true, numericality: { greater_than: 0 }
   validates :trader_id, uniqueness: { scope: :stock_id }
 
   def current_value

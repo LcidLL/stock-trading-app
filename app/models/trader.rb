@@ -1,9 +1,7 @@
 class Trader < ApplicationRecord
-  # Include default devise modules. Others available are:
-  # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
+  # Removed :confirmable and :lockable for now
   devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable,
-         :confirmable, :lockable
+         :recoverable, :rememberable, :validatable
 
   has_many :transactions, dependent: :destroy
   has_many :portfolios, dependent: :destroy
@@ -16,7 +14,7 @@ class Trader < ApplicationRecord
   end
 
   def inactive_message
-    approved? ?super : :not_approved
+    approved? ? super : :not_approved
   end
 
   def total_portfolio_value
