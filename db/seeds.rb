@@ -21,7 +21,6 @@ trader = Trader.find_or_create_by(email: 'trader@example.com') do |t|
   t.password_confirmation = 'password123'
 end
 
-# Ensure it's approved (in case it already existed)
 trader.update!(status: 'approved')
 puts "Created/updated trader: #{trader.email} - Status: #{trader.status}"
 
@@ -32,3 +31,145 @@ admin = AdminUser.find_or_create_by(email: 'admin@example.com') do |a|
 end
 
 puts "Created admin: #{admin.email}"
+
+# Create some approved/completed transactions to show portfolio
+puts "\nCreating sample transactions..."
+
+# Get stock references
+aapl = Stock.find_by(symbol: 'AAPL')
+googl = Stock.find_by(symbol: 'GOOGL')
+msft = Stock.find_by(symbol: 'MSFT')
+tsla = Stock.find_by(symbol: 'TSLA')
+
+# Create completed buy transactions (these will show in portfolio)
+completed_transactions = [
+  {
+    stock: aapl,
+    transaction_type: :buy,
+    quantity: 10,
+    price: 145.00,
+    status: :completed,
+    created_at: 3.days.ago
+  },
+  {
+    stock: googl,
+    transaction_type: :buy,
+    quantity: 2,
+    price: 2450.00,
+    status: :completed,
+    created_at: 2.days.ago
+  },
+  {
+    stock: msft,
+    transaction_type: :buy,
+    quantity: 5,
+    price: 295.50,
+    status: :completed,
+    created_at: 1.day.ago
+  },
+  {
+    stock: tsla,
+    transaction_type: :buy,
+    quantity: 8,
+    price: 240.00,
+    status: :completed,
+    created_at: 4.hours.ago
+  }
+]
+
+completed_transactions.each do |trans_attrs|
+  transaction = trader.transactions.find_or_create_by(
+    stock: trans_attrs[:stock],
+    transaction_type: trans_attrs[:transaction_type],
+    quantity: trans_attrs[:quantity],
+    price: trans_attrs[:price]
+  ) do |t|
+    t.status = trans_attrs[:status]
+    t.created_at = trans_attrs[:created_at]
+  end
+  
+  transaction.update!(status: :completed, created_at: trans_attrs[:created_at])
+  puts "Created transaction: #{trans_attrs[:transaction_type]} #{trans_attrs[:quantity]} shares of #{trans_attrs[:stock].symbol}"
+end
+
+puts "\nCreating portfolio entries..."
+
+portfolio_data = [
+  {
+    stock: aapl,
+    quantity: 10,
+    average_price: 145.00
+  },
+  {
+    stock: googl,
+    quantity: 2,
+    average_price: 2450.00
+  },
+  {
+    stock: msft,
+    quantity: 5,
+    average_price: 295.50
+  },
+  {
+    stock: tsla,
+    quantity: 8,
+    average_price: 240.00
+  }
+]
+
+portfolio_data.each do |portfolio_attrs|
+  portfolio = trader.portfolios.find_or_create_by(stock: portfolio_attrs[:stock]) do |p|
+    p.quantity = portfolio_attrs[:quantity]
+    p.average_price = portfolio_attrs[:average_price]
+  end
+  
+  portfolio.update!(
+    quantity: portfolio_attrs[:quantity],
+    average_price: portfolio_attrs[:average_price]
+  )
+  
+  puts "Created portfolio: #{portfolio_attrs[:quantity]} shares of #{portfolio_attrs[:stock].symbol} @ $#{portfolio_attrs[:average_price]}"
+end
+
+puts "\nCreating pending transactions..."
+
+pending_transactions = [
+  {
+    stock: aapl,
+    transaction_type: :buy,
+    quantity: 5,
+    price: aapl.current_price,
+    status: :pending
+  },
+  {
+    stock: tsla,
+    transaction_type: :sell,
+    quantity: 3,
+    price: tsla.current_price,
+    status: :pending
+  }
+]
+
+pending_transactions.each do |trans_attrs|
+  transaction = trader.transactions.create!(
+    stock: trans_attrs[:stock],
+    transaction_type: trans_attrs[:transaction_type],
+    quantity: trans_attrs[:quantity],
+    price: trans_attrs[:price],
+    status: trans_attrs[:status]
+  )
+  
+  puts "Created pending transaction: #{trans_attrs[:transaction_type]} #{trans_attrs[:quantity]} shares of #{trans_attrs[:stock].symbol}"
+end
+
+puts "\n=== SEED DATA SUMMARY ==="
+puts "Stocks: #{Stock.count}"
+puts "Traders: #{Trader.count}"
+puts "Admins: #{AdminUser.count}"
+puts "Transactions: #{Transaction.count}"
+puts "- Completed: #{Transaction.where(status: :completed).count}"
+puts "- Pending: #{Transaction.where(status: :pending).count}"
+puts "Portfolio entries: #{Portfolio.count}"
+
+total_value = trader.reload.total_portfolio_value
+puts "Trader's total portfolio value: $#{total_value}"

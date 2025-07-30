@@ -9,7 +9,7 @@ class Transaction < ApplicationRecord
   validates :price, presence: true, numericality: { greater_than: 0 }
   validates :total_amount, presence: true, numericality: { greater_than: 0 }
 
-  before_save :calculate_total_amount
+  before_validation :calculate_total_amount
 
   scope :pending_approval, -> { where(status: :pending) }
   scope :recent, -> { order(created_at: :desc) }
@@ -26,7 +26,9 @@ class Transaction < ApplicationRecord
   private
 
   def calculate_total_amount
-    self.total_amount = quantity * price
+    if quantity.present? && price.present?
+      self.total_amount = quantity * price
+    end
   end
 
   def execute_transaction

@@ -1,18 +1,11 @@
-# app/controllers/auth_controller.rb
 class AuthController < ApplicationController
   before_action :redirect_if_authenticated, except: [:trader_authenticate, :admin_authenticate, :create_trader_account]
 
-  def index
-    # Root page with login type selection
-  end
+  def index; end
 
-  def trader_login
-    # Trader login page
-  end
+  def trader_login; end
 
-  def admin_login
-    # Admin login page  
-  end
+  def admin_login; end
 
   def trader_signup
     @trader = Trader.new
@@ -21,7 +14,6 @@ class AuthController < ApplicationController
   def create_trader_account
     @trader = Trader.new(trader_params)
     
-    # Auto-approve in development environment for testing
     if Rails.env.development?
       @trader.status = :approved
       notice_message = 'Account created and auto-approved for development! You can now login.'
@@ -41,7 +33,7 @@ class AuthController < ApplicationController
   def trader_authenticate
     trader = Trader.find_by(email: params[:email])
     
-    # Debug logging
+    # DEBUG
     Rails.logger.info "=== TRADER LOGIN DEBUG ==="
     Rails.logger.info "Email received: #{params[:email]}"
     Rails.logger.info "Password received: #{params[:password].present? ? '[PRESENT]' : '[MISSING]'}"
