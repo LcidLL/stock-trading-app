@@ -6,14 +6,12 @@
     <div class="login-options">
       <div class="login-option">
         <h3>Trader</h3>
-        <p>Buy and sell stocks, manage your portfolio</p>
         <%= link_to "Login as Trader", login_trader_path, class: "btn btn-primary" %>
         <%= link_to "Sign Up as Trader", signup_trader_path, class: "btn btn-secondary" %>
       </div>
 
       <div class="login-option">
         <h3>Admin</h3>
-        <p>Manage traders and approve transactions</p>
         <%= link_to "Login as Admin", "/admin/login", class: "btn btn-primary" %>
         <small>Admin accounts are created by existing administrators</small>
       </div>
