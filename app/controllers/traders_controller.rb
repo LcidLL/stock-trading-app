@@ -4,7 +4,7 @@ class TradersController < ApplicationController
   
   def dashboard
     @total_portfolio_value = current_trader.total_portfolio_value
-    @recent_transactions = current_trader.transactions.recent.limit(5)
+    @recent_transactions = current_trader.transactions.includes(:stock).recent.limit(5)
     @top_stocks = current_trader.portfolios.joins(:stock).limit(5)
     @pending_transactions = current_trader.transactions.pending_approval.recent.limit(5) if defined?(current_trader.transactions.pending_approval)
   end
@@ -19,19 +19,23 @@ class TradersController < ApplicationController
     @transactions = current_trader.transactions.includes(:stock).recent
     @transactions = @transactions.where(transaction_type: params[:type]) if params[:type].present?
     @transactions = @transactions.where(status: params[:status]) if params[:status].present?
-    # Add pagination if using kaminari: @transactions = @transactions.page(params[:page])
   end
   
   def buy_stock
     @stock = Stock.find(params[:stock_id])
     quantity = params[:quantity].to_i
     
+    Rails.logger.info "=== BUY STOCK DEBUG ==="
+    Rails.logger.info "Stock: #{@stock.symbol}"
+    Rails.logger.info "Quantity: #{quantity}"
+    Rails.logger.info "Price: #{@stock.current_price}"
+    Rails.logger.info "Trader: #{current_trader.email}"
+    
     if quantity <= 0
       redirect_back(fallback_location: "/traders/#{current_trader.id}/dashboard", alert: 'Invalid quantity')
       return
     end
     
-    # Create pending transaction instead of completed
     transaction = current_trader.transactions.build(
       stock: @stock,
       transaction_type: :buy,
@@ -40,12 +44,17 @@ class TradersController < ApplicationController
       status: :pending
     )
     
+    Rails.logger.info "Transaction valid: #{transaction.valid?}"
+    Rails.logger.info "Transaction errors: #{transaction.errors.full_messages}" if !transaction.valid?
+    
     if transaction.save
+      Rails.logger.info "Transaction saved successfully"
       redirect_to "/traders/#{current_trader.id}/dashboard", 
                   notice: 'Buy order submitted! Waiting for admin approval.'
     else
+      Rails.logger.error "Transaction save failed: #{transaction.errors.full_messages}"
       redirect_back(fallback_location: "/traders/#{current_trader.id}/dashboard", 
-                   alert: 'Failed to submit buy order')
+                   alert: "Failed to submit buy order: #{transaction.errors.full_messages.join(', ')}")
     end
   end
   
@@ -60,7 +69,6 @@ class TradersController < ApplicationController
       return
     end
     
-    # Create pending transaction
     transaction = current_trader.transactions.build(
       stock: @stock,
       transaction_type: :sell,
@@ -77,7 +85,7 @@ class TradersController < ApplicationController
                    alert: 'Failed to submit sell order')
     end
   end
-  
+
   def logout
     sign_out(current_trader)
     redirect_to root_path, notice: 'Logged out successfully!'

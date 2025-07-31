@@ -1,50 +1,68 @@
-<h1>Trader Dashboard</h1>
-<p>Welcome, <%= current_trader.email %>!</p>
-
-<div class="portfolio-summary">
-  <h2>Portfolio Summary</h2>
-  <p><strong>Total Portfolio Value:</strong> $<%= number_with_precision(@total_portfolio_value, precision: 2) %></p>
+<div class="trader-header">
+  <h1 class="trader-title">Stock Trading App</h1>
+  <div class="user-info">
+    <span class="trader-welcome">Welcome, <%= current_trader.email %></span>
+    <%= link_to "Logout", "/traders/#{current_trader.id}/logout", class: "btn btn-secondary btn-small" %>
+  </div>
 </div>
 
-<div class="available-stocks">
-  <h2>Available Stocks</h2>
-  <% Stock.available_for_trading.each do |stock| %>
-    <div class="stock-item">
-      <strong><%= stock.symbol %></strong> - <%= stock.name %>
-      <br>Price: $<%= number_with_precision(stock.current_price, precision: 2) %>
-      
-      <%= form_with url: "/traders/#{current_trader.id}/buy_stock", method: :post, local: true do |f| %>
-        <%= f.hidden_field :stock_id, value: stock.id %>
-        <%= f.number_field :quantity, placeholder: "Quantity", min: 1, required: true %>
-        <%= f.submit "Buy" %>
-      <% end %>
+<div class="dashboard-container">
+  <div class="summary-cards">
+    <div class="summary-card">
+      <h3>Total Portfolio Value</h3>
+      <div class="value">$<%= number_with_precision(@total_portfolio_value, precision: 2) %></div>
     </div>
-    <br>
-  <% end %>
-</div>
+  </div>
 
-<div class="recent-transactions">
-  <h2>Recent Transactions</h2>
-  <% if @recent_transactions.any? %>
-    <% @recent_transactions.each do |transaction| %>
-      <p>
-        <%= transaction.transaction_type.capitalize %> 
-        <%= transaction.quantity %> shares of 
-        <%= transaction.stock.symbol %> at 
-        $<%= number_with_precision(transaction.price, precision: 2) %>
-        - <%= transaction.created_at.strftime("%m/%d/%Y") %>
-      </p>
+  <div class="stocks-section">
+    <h2 class="section-title">Available Stocks</h2>
+    <% Stock.available_for_trading.each do |stock| %>
+      <div class="stock-item">
+        <div class="stock-info">
+          <div class="stock-symbol"><%= stock.symbol %></div>
+          <div class="stock-name"><%= stock.name %></div>
+        </div>
+        <div class="stock-price">$<%= number_with_precision(stock.current_price, precision: 2) %></div>
+        <%= form_with url: "/traders/#{current_trader.id}/buy_stock", method: :post, local: true, class: "stock-action" do |f| %>
+          <%= f.hidden_field :stock_id, value: stock.id %>
+          <%= f.number_field :quantity, placeholder: "Qty", min: 1, required: true %>
+          <%= f.submit "Buy", class: "btn btn-primary btn-small" %>
+        <% end %>
+      </div>
     <% end %>
-  <% else %>
-    <p>No transactions yet.</p>
-  <% end %>
-  
-  <%= link_to "View All Transactions", "/traders/#{current_trader.id}/transactions" %>
-</div>
+  </div>
 
-<div class="navigation">
-  <%= link_to "Dashboard", "/traders/#{current_trader.id}/dashboard" %>
-  <%= link_to "Portfolio", "/traders/#{current_trader.id}/portfolio" %>
-  <%= link_to "Transactions", "/traders/#{current_trader.id}/transactions" %>
-  <%= link_to "Logout", "/traders/#{current_trader.id}/logout", method: :delete %>
+  <div class="stocks-section">
+    <h2 class="section-title">Recent Transactions</h2>
+    <% if @recent_transactions.any? %>
+      <% @recent_transactions.each do |transaction| %>
+        <div class="transaction-item">
+          <div class="transaction-header">
+            <span class="transaction-type <%= transaction.transaction_type %>">
+              <%= transaction.transaction_type&.capitalize || 'Unknown' %>
+            </span>
+            <span class="status-badge status-<%= transaction.status %>">
+              <%= transaction.status %>
+            </span>
+          </div>
+          <div class="transaction-details">
+            <div><strong>Stock:</strong> <%= transaction.stock.symbol %></div>
+            <div><strong>Quantity:</strong> <%= transaction.quantity %></div>
+            <div><strong>Price:</strong> $<%= number_with_precision(transaction.price, precision: 2) %></div>
+            <div><strong>Date:</strong> <%= transaction.created_at.strftime("%m/%d/%Y") %></div>
+          </div>
+        </div>
+      <% end %>
+      <div class="auth-links">
+        <%= link_to "View All Transactions", "/traders/#{current_trader.id}/transactions" %>
+      </div>
+    <% else %>
+      <p style="color: #666666; text-align: center; padding: 20px;">No transactions yet.</p>
+    <% end %>
+  </div>
+
+  <div class="trader-navigation">
+    <%= link_to "Portfolio", "/traders/#{current_trader.id}/portfolio" %>
+    <%= link_to "Transactions", "/traders/#{current_trader.id}/transactions" %>
+  </div>
 </div>

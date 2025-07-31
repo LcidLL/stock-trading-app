@@ -16,9 +16,10 @@
   </div>
 <% end %>
 
+<br>
 <%= link_to 'Back to Login Options', root_path %>
 <br>
-<%= link_to "Don't have an account? Sign up here", signup_trader_path %>
+<%= link_to "Sign up here", signup_trader_path %>
 
 <% if flash[:alert] %>
   <p style="color: red;"><%= flash[:alert] %></p>
@@ -28,6 +29,12 @@
 <% end %>
 
 <style>
+
+  * {
+    margin-top: 10px;
+    margin-left: 5px;
+  }
+
   .field {
     margin-bottom: 15px;
   }
@@ -48,7 +55,7 @@
   
   .actions input[type="submit"] {
     padding: 10px 20px;
-    background-color: #007bff;
+    background-color: #000000ff;
     color: white;
     border: none;
     border-radius: 4px;

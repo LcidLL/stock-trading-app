@@ -14,20 +14,23 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "auth", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "trader", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
 
   </head>
 
   <body>
-    <p class="notice"><%= notice %></p>
-    <p class="alert"><%= alert %></p>
-    <%= yield %>
     <% if notice %>
-      <p class="alert alert-success"><%= notice %></p>
+      <div class="alert alert-success"><%= notice %></div>
     <% end %>
     
     <% if alert %>
-      <p class="alert alert-danger"><%= alert %></p>
+      <div class="alert alert-danger"><%= alert %></div>
     <% end %>
+    
+    <div class="main-content">
+      <%= yield %>
+    </div>
   </body>
 </html>

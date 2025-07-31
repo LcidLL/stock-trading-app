@@ -10,7 +10,7 @@ Rails.application.routes.draw do
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
 
-  # Root path with user type selection
+ # ROOT PATH
   root "auth#index"
   get 'login/trader', to: 'auth#trader_login', as: 'login_trader'
   get 'login/admin', to: 'auth#admin_login', as: 'login_admin'
