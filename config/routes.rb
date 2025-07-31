@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  devise_for :users
   devise_for :admins
   devise_for :traders
   devise_for :admin_users, ActiveAdmin::Devise.config
@@ -18,13 +19,9 @@ Rails.application.routes.draw do
   get 'signup/trader', to: 'auth#trader_signup', as: 'signup_trader'
   post 'signup/trader', to: 'auth#create_trader_account'
 
-  namespace :admin do
-    resources :users do
-      member do
-        patch :approve
-        patch :reject
-      end
-    end
+  namespace :admin_panel do
+    get '/', to: 'dashboard#index', as: :admn_dashboard 
+    resources :users
   end
 
   resources :traders, only: [] do

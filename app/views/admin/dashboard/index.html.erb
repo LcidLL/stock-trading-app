@@ -1,0 +1,11 @@
+<h1>Admin Dashboard</h1>
+
+<h2>Trader Overview</h2>
+
+<p>Total Traders: <strong><%= @total_traders %></strong></p>
+
+<h3>Trader Status Chart</h3>
+<div id="traders_chart_div" style="width: 100%; max-width: 600px; height: 400px;">
+  </div>
+
+<%= render_chart @traders_chart, 'traders_chart_div' %>

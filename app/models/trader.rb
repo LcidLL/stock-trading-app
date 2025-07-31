@@ -20,4 +20,14 @@ class Trader < ApplicationRecord
   def total_portfolio_value
     portfolios.sum { |portfolio| portfolio.quantity * portfolio.stock.current_price }
   end
+
+  #for ransack error
+  def self.ransackable_associations(auth_object = nil)
+    ["transactions", "portfolio"]
+  end
+
+  def self.ransackable_attributes(auth_object = nil)
+    ["email", "status", "created_at", "updated_at"]
+  end
+
 end

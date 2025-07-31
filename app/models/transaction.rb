@@ -23,6 +23,15 @@ class Transaction < ApplicationRecord
     update!(status: :rejected)
   end
 
+  #ransackble
+  def self.ransackable_attributes(auth_object = nil)
+    ["created_at", "id", "price", "quantity", "status", "stock_id", "total_amount", "trader_id", "transaction_type", "updated_at"]
+  end
+
+  def self.ransackable_associations(auth_object = nil)
+    ["trader", "stock"]
+  end
+
   private
 
   def calculate_total_amount
