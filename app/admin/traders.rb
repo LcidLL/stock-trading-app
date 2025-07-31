@@ -37,12 +37,30 @@ ActiveAdmin.register Trader do
 
   member_action :approve, method: :patch do
     resource.update!(status: :approved)
-    redirect_to admin_traders_path, notice: "Trader #{resource.email} has been approved and can now login."
+    
+    # Send approval email
+    begin
+      TraderMailer.approval_notification(resource).deliver_now
+      Rails.logger.info "Approval email sent to #{resource.email}"
+    rescue => e
+      Rails.logger.error "Failed to send approval email to #{resource.email}: #{e.message}"
+    end
+    
+    redirect_to admin_traders_path, notice: "Trader #{resource.email} has been approved and notification email sent."
   end
 
   member_action :reject, method: :patch do
     resource.update!(status: :rejected)
-    redirect_to admin_traders_path, notice: "Trader #{resource.email} has been rejected."
+    
+    # Send rejection email
+    begin
+      TraderMailer.rejection_notification(resource).deliver_now
+      Rails.logger.info "Rejection email sent to #{resource.email}"
+    rescue => e
+      Rails.logger.error "Failed to send rejection email to #{resource.email}: #{e.message}"
+    end
+    
+    redirect_to admin_traders_path, notice: "Trader #{resource.email} has been rejected and notification email sent."
   end
 
   permit_params :email, :password, :password_confirmation, :status
