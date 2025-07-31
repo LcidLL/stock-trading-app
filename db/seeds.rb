@@ -19,10 +19,12 @@ puts "Created #{Stock.count} stocks"
 trader = Trader.find_or_create_by(email: 'trader@example.com') do |t|
   t.password = 'password123'
   t.password_confirmation = 'password123'
+  t.confirmed_at = Time.current  # Confirm the trader
 end
 
-trader.update!(status: 'approved')
-puts "Created/updated trader: #{trader.email} - Status: #{trader.status}"
+# Ensure it's approved and confirmed (in case it already existed)
+trader.update!(status: 'approved', confirmed_at: Time.current)
+puts "Created/updated trader: #{trader.email} - Status: #{trader.status} - Confirmed: #{trader.confirmed?}"
 
 # Create admin
 admin = AdminUser.find_or_create_by(email: 'admin@example.com') do |a|
@@ -86,12 +88,15 @@ completed_transactions.each do |trans_attrs|
   ) do |t|
     t.status = trans_attrs[:status]
     t.created_at = trans_attrs[:created_at]
+    # total_amount will be calculated by the before_validation callback
   end
   
+  # Ensure it's completed
   transaction.update!(status: :completed, created_at: trans_attrs[:created_at])
   puts "Created transaction: #{trans_attrs[:transaction_type]} #{trans_attrs[:quantity]} shares of #{trans_attrs[:stock].symbol}"
 end
 
+# Create portfolios for the completed transactions
 puts "\nCreating portfolio entries..."
 
 portfolio_data = [
@@ -123,6 +128,7 @@ portfolio_data.each do |portfolio_attrs|
     p.average_price = portfolio_attrs[:average_price]
   end
   
+  # Update if it already existed
   portfolio.update!(
     quantity: portfolio_attrs[:quantity],
     average_price: portfolio_attrs[:average_price]
@@ -131,6 +137,7 @@ portfolio_data.each do |portfolio_attrs|
   puts "Created portfolio: #{portfolio_attrs[:quantity]} shares of #{portfolio_attrs[:stock].symbol} @ $#{portfolio_attrs[:average_price]}"
 end
 
+# Create a few pending transactions to show the approval flow
 puts "\nCreating pending transactions..."
 
 pending_transactions = [
@@ -171,5 +178,6 @@ puts "- Completed: #{Transaction.where(status: :completed).count}"
 puts "- Pending: #{Transaction.where(status: :pending).count}"
 puts "Portfolio entries: #{Portfolio.count}"
 
+# Calculate total portfolio value
 total_value = trader.reload.total_portfolio_value
 puts "Trader's total portfolio value: $#{total_value}"
