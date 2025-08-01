@@ -20,6 +20,8 @@ Rails.application.routes.draw do
   get 'signup/trader', to: 'auth#trader_signup', as: 'signup_trader'
   post 'signup/trader', to: 'auth#create_trader_account'
 
+  # mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
+
   namespace :admin_panel do
     get '/', to: 'dashboard#index', as: :admn_dashboard
     resources :users

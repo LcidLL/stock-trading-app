@@ -13,17 +13,10 @@ class AuthController < ApplicationController
 
   def create_trader_account
     @trader = Trader.new(trader_params)
-    
-    if Rails.env.development?
-      @trader.status = :approved
-      notice_message = 'Account created and auto-approved for development! You can now login.'
-    else
-      @trader.status = :pending
-      notice_message = 'Account created successfully! Please wait for admin approval before logging in.'
-    end
+    @trader.status = :pending 
 
     if @trader.save
-      redirect_to root_path, notice: notice_message
+      redirect_to root_path, notice: 'Account created successfully! Please check your email to confirm your account, then wait for admin approval.'
     else
       flash.now[:alert] = 'Failed to create account. Please check the form for errors.'
       render :trader_signup, status: :unprocessable_entity
@@ -39,15 +32,20 @@ class AuthController < ApplicationController
     Rails.logger.info "Password received: #{params[:password].present? ? '[PRESENT]' : '[MISSING]'}"
     Rails.logger.info "Trader found: #{trader.present?}"
     Rails.logger.info "Trader status: #{trader&.status}"
+    Rails.logger.info "Trader confirmed?: #{trader&.confirmed?}" if trader.respond_to?(:confirmed?)
     Rails.logger.info "Password valid: #{trader&.valid_password?(params[:password])}" if trader
 
     if trader && trader.valid_password?(params[:password])
-      if trader.approved?
-        sign_in(trader)
-        redirect_to "/traders/#{trader.id}/dashboard", notice: 'Logged in as Trader successfully!'
-      else
+      # Check both confirmation and approval once we add confirmable
+      if trader.respond_to?(:confirmed?) && !trader.confirmed?
+        flash.now[:alert] = 'Please check your email and click the confirmation link before logging in.'
+        render :trader_login, status: :unauthorized
+      elsif !trader.approved?
         flash.now[:alert] = 'Your account is pending approval. Please wait for admin approval.'
         render :trader_login, status: :unauthorized
+      else
+        sign_in(trader)
+        redirect_to "/traders/#{trader.id}/dashboard", notice: 'Logged in as Trader successfully!'
       end
     else
       flash.now[:alert] = 'Invalid email or password.'
@@ -60,7 +58,7 @@ class AuthController < ApplicationController
 
     if admin_user && admin_user.valid_password?(params[:password])
       sign_in(admin_user)
-      redirect_to admin_dashboard_path, notice: 'Logged in as Admin successfully!'
+      redirect_to "/admin", notice: 'Logged in as Admin successfully!'
     else
       flash.now[:alert] = 'Invalid email or password.'
       render :admin_login, status: :unauthorized
@@ -73,7 +71,7 @@ class AuthController < ApplicationController
     if trader_signed_in?
       redirect_to "/traders/#{current_trader.id}/dashboard"
     elsif admin_user_signed_in?
-      redirect_to admin_dashboard_path
+      redirect_to "/admin"
     end
   end
 

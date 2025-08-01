@@ -10,7 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
+<<<<<<< HEAD
 ActiveRecord::Schema[7.2].define(version: 2025_08_01_033510) do
+=======
+ActiveRecord::Schema[7.2].define(version: 2025_07_31_065658) do
+>>>>>>> 414015ba6f550ba9c585af9c6be4040cf1170e69
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -48,6 +52,16 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_01_033510) do
     t.datetime "updated_at", null: false
     t.index ["admin_user_id"], name: "index_comments_on_admin_user_id"
     t.index ["trader_id"], name: "index_comments_on_trader_id"
+  create_table "admins", force: :cascade do |t|
+    t.string "email", default: "", null: false
+    t.string "encrypted_password", default: "", null: false
+    t.string "reset_password_token"
+    t.datetime "reset_password_sent_at"
+    t.datetime "remember_created_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_admins_on_email", unique: true
+    t.index ["reset_password_token"], name: "index_admins_on_reset_password_token", unique: true
   end
 
   create_table "portfolios", force: :cascade do |t|
@@ -77,11 +91,19 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_01_033510) do
     t.datetime "remember_created_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+<<<<<<< HEAD
     t.integer "status", default: 0
     t.datetime "last_sign_in_at"
+=======
+    t.integer "status"
+    t.string "confirmation_token"
+    t.datetime "confirmed_at"
+    t.datetime "confirmation_sent_at"
+    t.string "unconfirmed_email"
+    t.index ["confirmation_token"], name: "index_traders_on_confirmation_token", unique: true
+>>>>>>> 414015ba6f550ba9c585af9c6be4040cf1170e69
     t.index ["email"], name: "index_traders_on_email", unique: true
     t.index ["reset_password_token"], name: "index_traders_on_reset_password_token", unique: true
-    t.index ["status"], name: "index_traders_on_status"
   end
 
   create_table "transactions", force: :cascade do |t|

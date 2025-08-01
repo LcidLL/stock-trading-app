@@ -1,26 +1,64 @@
-<h2>Log in</h2>
+<h1>Trader Login</h1>
 
-<%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+<%= form_with url: login_trader_path, method: :post, local: true do |f| %>
   <div class="field">
-    <%= f.label :email %><br />
-    <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
+    <%= f.label :email %>
+    <%= f.email_field :email, autofocus: true, autocomplete: "email", required: true %>
   </div>
 
   <div class="field">
-    <%= f.label :password %><br />
-    <%= f.password_field :password, autocomplete: "current-password" %>
+    <%= f.label :password %>
+    <%= f.password_field :password, autocomplete: "current-password", required: true %>
   </div>
-
-  <% if devise_mapping.rememberable? %>
-    <div class="field">
-      <%= f.check_box :remember_me %>
-      <%= f.label :remember_me %>
-    </div>
-  <% end %>
 
   <div class="actions">
     <%= f.submit "Log in" %>
   </div>
 <% end %>
 
-<%= render "devise/shared/links" %>
+<br>
+<%= link_to 'Back to Login Options', root_path %>
+<br>
+<%= link_to "Sign up here", signup_trader_path %>
+
+<% if flash[:alert] %>
+  <p style="color: red;"><%= flash[:alert] %></p>
+<% end %>
+<% if flash[:notice] %>
+  <p style="color: green;"><%= flash[:notice] %></p>
+<% end %>
+
+<style>
+
+  * {
+    margin-top: 10px;
+    margin-left: 5px;
+  }
+
+  .field {
+    margin-bottom: 15px;
+  }
+  
+  .field label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  .field input[type="email"], 
+  .field input[type="password"] {
+    width: 300px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .actions input[type="submit"] {
+    padding: 10px 20px;
+    background-color: #000000ff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+</style>
