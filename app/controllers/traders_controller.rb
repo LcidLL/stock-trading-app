@@ -7,6 +7,7 @@ class TradersController < ApplicationController
     @recent_transactions = current_trader.transactions.includes(:stock).recent.limit(5)
     @top_stocks = current_trader.portfolios.joins(:stock).limit(5)
     @pending_transactions = current_trader.transactions.pending_approval.recent.limit(5) if defined?(current_trader.transactions.pending_approval)
+    @trader = Trader.includes(comments: :admin_user).find(current_trader.id)
   end
   
   def portfolio

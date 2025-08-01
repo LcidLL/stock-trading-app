@@ -10,4 +10,9 @@ class Stock < ApplicationRecord
   def self.available_for_trading
     where('current_price > 0')
   end
+
+  #ransack for stock in admin side
+  def self.ransackable_attributes(auth_object = nil)
+    ["created_at", "current_price", "id", "name", "symbol", "updated_at"]
+  end
 end

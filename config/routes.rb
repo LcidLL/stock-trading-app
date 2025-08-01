@@ -3,14 +3,15 @@ Rails.application.routes.draw do
   devise_for :admins
   devise_for :traders
   devise_for :admin_users, ActiveAdmin::Devise.config
-  ActiveAdmin.routes(self)
+
+  ActiveAdmin.routes(self) do
+  end
 
   get "pages/index"
   get "up" => "rails/health#show", as: :rails_health_check
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
 
- # ROOT PATH
   root "auth#index"
   get 'login/trader', to: 'auth#trader_login', as: 'login_trader'
   get 'login/admin', to: 'auth#admin_login', as: 'login_admin'
@@ -20,8 +21,11 @@ Rails.application.routes.draw do
   post 'signup/trader', to: 'auth#create_trader_account'
 
   namespace :admin_panel do
-    get '/', to: 'dashboard#index', as: :admn_dashboard 
+    get '/', to: 'dashboard#index', as: :admn_dashboard
     resources :users
+    resources :traders do
+      resources :comments, only: [:create], controller: 'trader_comments'
+    end
   end
 
   resources :traders, only: [] do

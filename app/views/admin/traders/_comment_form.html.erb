@@ -1,0 +1,4 @@
+<%= form_with url: admin_panel_trader_comments_path(trader), method: :post do |form| %>
+  <%= text_area_tag 'comment[body]', nil, placeholder: "Type your comment here...", style: "width: 100%; height: 100px;" %>
+  <%= form.submit "Add Comment", class: "button" %>
+<% end %>

@@ -6,6 +6,7 @@ class Trader < ApplicationRecord
   has_many :transactions, dependent: :destroy
   has_many :portfolios, dependent: :destroy
   has_many :stocks, through: :portfolios
+  has_many :comments
 
   enum status: { pending: 0, approved: 1, rejected: 2 }
 

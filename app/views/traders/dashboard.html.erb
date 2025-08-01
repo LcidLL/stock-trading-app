@@ -32,34 +32,55 @@
     <% end %>
   </div>
 
-  <div class="stocks-section">
-    <h2 class="section-title">Recent Transactions</h2>
-    <% if @recent_transactions.any? %>
-      <% @recent_transactions.each do |transaction| %>
-        <div class="transaction-item">
-          <div class="transaction-header">
-            <span class="transaction-type <%= transaction.transaction_type %>">
-              <%= transaction.transaction_type&.capitalize || 'Unknown' %>
-            </span>
-            <span class="status-badge status-<%= transaction.status %>">
-              <%= transaction.status %>
-            </span>
+  <div class="row-panels" style="display: flex; justify-content: space-between; gap: 20px;">
+    <div class="stocks-section" style="flex: 1;">
+      <h2 class="section-title">Recent Transactions</h2>
+      <% if @recent_transactions.any? %>
+        <% @recent_transactions.each do |transaction| %>
+          <div class="transaction-item">
+            <div class="transaction-header">
+              <span class="transaction-type <%= transaction.transaction_type %>">
+                <%= transaction.transaction_type&.capitalize || 'Unknown' %>
+              </span>
+              <span class="status-badge status-<%= transaction.status %>">
+                <%= transaction.status %>
+              </span>
+            </div>
+            <div class="transaction-details">
+              <div><strong>Stock:</strong> <%= transaction.stock.symbol %></div>
+              <div><strong>Quantity:</strong> <%= transaction.quantity %></div>
+              <div><strong>Price:</strong> $<%= number_with_precision(transaction.price, precision: 2) %></div>
+              <div><strong>Date:</strong> <%= transaction.created_at.strftime("%m/%d/%Y") %></div>
+            </div>
           </div>
-          <div class="transaction-details">
-            <div><strong>Stock:</strong> <%= transaction.stock.symbol %></div>
-            <div><strong>Quantity:</strong> <%= transaction.quantity %></div>
-            <div><strong>Price:</strong> $<%= number_with_precision(transaction.price, precision: 2) %></div>
-            <div><strong>Date:</strong> <%= transaction.created_at.strftime("%m/%d/%Y") %></div>
-          </div>
+        <% end %>
+        <div class="auth-links">
+          <%= link_to "View All Transactions", "/traders/#{current_trader.id}/transactions" %>
         </div>
+      <% else %>
+        <p style="color: #666666; text-align: center; padding: 20px;">No transactions yet.</p>
       <% end %>
-      <div class="auth-links">
-        <%= link_to "View All Transactions", "/traders/#{current_trader.id}/transactions" %>
+    </div>
+
+    <div class="stocks-section" style="flex: 1;">
+      <h2 class="section-title">Admin Comments</h2>
+      <div class="comments-list">
+        <% if @trader.comments.any? %>
+          <% @trader.comments.order(created_at: :desc).each do |comment| %>
+            <div class="comment-item">
+              <div class="comment-header">
+                <strong>From: <%= comment.admin_user.email %></strong>
+                <small><%= comment.created_at.strftime("%B %d, %Y at %l:%M %P") %></small>
+              </div>
+              <p class="comment-body"><%= comment.body %></p>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-muted" style="color: #666666; text-align: center; padding: 20px;">No comments from admin yet.</p>
+        <% end %>
       </div>
-    <% else %>
-      <p style="color: #666666; text-align: center; padding: 20px;">No transactions yet.</p>
-    <% end %>
-  </div>
+    </div>
+    </div>
 
   <div class="trader-navigation">
     <%= link_to "Portfolio", "/traders/#{current_trader.id}/portfolio" %>
