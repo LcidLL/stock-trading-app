@@ -55,7 +55,7 @@ group :development do
   gem "web-console"
   # gem 'letter_opener_web'
   gem 'dotenv-rails'
-  gem 'rspec-rails', '~> 8.0.0'
+  gem 'rspec-rails', '~> 8.0.2'
 end
 
 group :test do
